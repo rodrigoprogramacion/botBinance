@@ -19,7 +19,18 @@ def log(texto:str):
     f.write(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + " -> " + texto + "\n")
     f.close()
 
+def OrdenMarket(simbolo:str, cantidad:float, side:str) -> dict:
+        endPoint = "https://testnet.binancefuture.com/fapi/v1/order"
+        parametros = "timestamp="+str(ObtenerFechaServer())
+        parametros += "&symbol="+simbolo.upper()
+        parametros +="&side="+side.upper()
+        parametros +="&type=MARKET"
+        parametros +="&quantity=" + str(cantidad)
 
+    
+
+        r=requests.post(endPoint, params=parametros)
+        return r.json()
 
 app = Flask(__name__)
 

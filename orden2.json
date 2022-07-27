@@ -4,7 +4,6 @@
     "exchange": "{{exchange}}",
     "ticker": "{{ticker}}",
     "bar": {
-        "time": {{time}},
         "open": {{open}},
         "high": {{high}},
         "low": {{low}},
@@ -20,9 +19,7 @@
         "market_position": "{{strategy.market_position}}",
         "market_position_size": {{strategy.market_position_size}},
         "prev_market_position": "{{strategy.prev_market_position}}",        
-        "prev_market_position_size": "{{strategy.prev_market_position}}",
-        "stop_loss": {{plot("stop")}},
-        "take_profit1": {{plot("profit1")}},
-        "take_profit2": {{plot("profit2")}}
+        "prev_market_position_size": "{{strategy.prev_market_position}}"
+  
     }
 }
