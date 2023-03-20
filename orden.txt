@@ -13,7 +13,7 @@
     "strategy":{
         "position_size": {{strategy.position_size}},
         "order_action": "{{strategy.order.action}}",
-        "order_contracts ":{{strategy.order.contracts}},
+        "order_contracts": {{strategy.order.contracts}},
         "order_price": {{strategy.order.price}},
         "order_id": "{{strategy.order.id}}",
         "market_position": "{{strategy.market_position}}",

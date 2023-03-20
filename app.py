@@ -1,11 +1,14 @@
 
+import json
 import requests
 import config
-from flask import Flask, request, json, jsonify
+from flask import Flask, request, render_template
 from binance.cm_futures import CMFutures
-from datetime import datetime
 
 
+app = Flask(__name__)
+
+cm_futures_client = CMFutures (key=config.API_KEY, secret=config.SECRET_KEY)
 
 
 def ObtenerFechaServer() -> int:
@@ -14,58 +17,62 @@ def ObtenerFechaServer() -> int:
     resp = r.json()
     return resp["serverTime"]
 
-def log(texto:str):
-    f = open("ordenes.log", "a")
-    f.write(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + " -> " + texto + "\n")
-    f.close()
 
-def OrdenMarket(simbolo:str, cantidad:float, side:str) -> dict:
-        endPoint = "https://testnet.binancefuture.com/fapi/v1/order"
-        parametros = "timestamp="+str(ObtenerFechaServer())
-        parametros += "&symbol="+simbolo.upper()
-        parametros +="&side="+side.upper()
-        parametros +="&type=MARKET"
-        parametros +="&quantity=" + str(cantidad)
-
-    
-
-        r=requests.post(endPoint, params=parametros)
-        return r.json()
-
-app = Flask(__name__)
-
-cm_futures_client = CMFutures (key=config.API_KEY, secret=config.SECRET_KEY)
-
-def orden(side, quantity, symbol):
+def orden(side, quantity, symbol, price):
     try:
-        print(f"Enviando orden... {side} - {quantity} - {symbol}")
-        orden = cm_futures_client.new_order(symbol=symbol, side=side, type="MARKET", quantity=quantity, timestamp=str(ObtenerFechaServer()))
-        print(orden)
+        print(f"Enviando orden... {side} - {quantity} - {symbol} - {price}")
+        orden = cm_futures_client.new_order(symbol=symbol, side=side, type="LIMIT", quantity=quantity, timestamp=str(ObtenerFechaServer()), price=price, timeInForce="GTC")
     except Exception as e:
         print("a ocurrido un error - {}".format(e))
         return False
-    return True
+    return orden
 
+
+@app.route('/')
+
+def bienvenida():
+    return render_template('index.html')
 
 
 @app.route("/alerta", methods=['POST'])
 
 def alerta():
     
-    data = json.loads(request.data)    
+    data = json.loads(request.data) 
+
+    if data['passphrase'] != config.WEBHOOK_PASSPHRASE:
+
+            return {
+            "Codigo":"Error",
+            "Mensaje":"Passphrase incorrecto"
+            }
+
+    print(data['ticker'])  
+    print(data['bar'])
+
     side = data['strategy']['order_action'].upper()                                       
     quantity = data['strategy']['order_contracts']
     symbol = data['ticker'].upper()
-    passphrase= data['passphrase']
-    enviar_orden=orden(side,quantity,symbol)
+    precio=data['strategy']['order_price']
+    price=format(precio,'.1f')
+   
+    respuesta=orden(side,quantity,symbol,price)
+
+    if respuesta:
+        return {
+            "Codigo":"200",
+            "Mensaje:":"Orden ejecutada"
+        }
     
 
-    return {
+    else:
+        print("Orden Error")
+        return {
             
-            "Conexion":"Exitosa",
-            "Mensaje": data,
+            "Codigo":"500",
+            "Mensaje": "Orden Failed",
            
-            }
+         }
 
 
 
